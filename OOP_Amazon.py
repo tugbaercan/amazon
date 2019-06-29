@@ -6,67 +6,68 @@ import time
 from selenium.webdriver.support.wait import WebDriverWait
 
 
-class BaseFunction:
+class BaseFunctions:
     driver = webdriver.Chrome()
     driver.maximize_window()
-    TEXT = ""
+
+    def wait_element(self, locator):
+        return WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(locator))
 
     def click(self, locator):
-        WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(locator)).click()
+        self.wait_element(locator).click()
 
     def input(self, locator, value):
-        WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(locator)).send_keys(value)
+        self.wait_element(locator).send_keys(value)
 
     def get_text(self, locator):
-        self.TEXT == self.driver.find_element_by_css_selector(locator).text
-
-    def Assert(self, value1, value2):
-        assert value1, value2
+        return self.wait_element(locator).text
 
     def hover(self, locator):
-        ActionChains(self.driver).move_to_element(WebDriverWait(self.driver, 10)
-                                                  .until(EC.element_to_be_clickable(locator))).perform()
+        ActionChains(self.driver).move_to_element(WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(locator))).perform()
 
 
-class AmazonTest(BaseFunction):
+class AmazonTest(BaseFunctions):
 
     def __init__(self):
 
         self.driver.get("https://www.amazon.com/")
 
         self.click((By.ID, 'nav-link-accountList'))
-        self.input((By.ID, 'ap_email'), "umut.yasin.colak@hotmail.com")
-        self.input((By.ID, 'ap_password'), "Umut0127-")
+        self.input((By.ID, 'ap_email'), "test0321@outlook.com.tr")
+        self.input((By.ID, 'ap_password'), "testinsider")
         self.click((By.CLASS_NAME, "a-button-input"))
 
         self.input((By.ID, 'twotabsearchtextbox'), "Samsung")
         self.click((By.CLASS_NAME, 'nav-input'))
 
-        self.get_text('.a-color-state')
-        self.Assert("Samsung", self.TEXT)
+        search_text = self.get_text((By.CSS_SELECTOR, '.a-color-state'))
+        assert "Samsung", search_text
 
         self.click((By.CLASS_NAME, 'a-normal'))
-        self.get_text('.a-selected')
-        self.Assert("2", self.TEXT)
+        page_number = self.get_text((By.CSS_SELECTOR, '.a-selected'))
+        assert "2" == page_number
 
         self.click((By.CSS_SELECTOR, 'div[data-index="2"] h2 a'))
+        wish_list = self.driver.find_element_by_css_selector('#productTitle').text
 
         self.click((By.ID, 'wishlistButtonStack'))
         time.sleep(2)
         self.click((By.CSS_SELECTOR, '.a-icon.a-icon-close'))
-        self.get_text('#productTitle')
+
+        self.get_text((By.CSS_SELECTOR,'#productTitle'))
 
         self.hover((By.ID, 'nav-link-accountList'))
-
-        self.click((By.LINK_TEXT, 'Wish List'))
-        a = self.driver.find_element_by_css_selector('h3').text
-        self.Assert(a, self.TEXT)
-
-        self.click((By.ID, 'a-autoid-7'))
         time.sleep(2)
-        self.get_text('.a-alert-inline-success')
+        self.click((By.LINK_TEXT, 'Wish List'))
+        wish_list_add = self.driver.find_element_by_css_selector('h3').text
+        assert wish_list == wish_list_add
 
-        self.Assert('Deleted', self.TEXT)
+        self.click((By.CSS_SELECTOR, '#content-right .a-button-stack .a-link-normal'))
+        time.sleep(2)
+        product_deleted = self.get_text((By.CSS_SELECTOR, '.a-alert-inline-success'))
+
+        assert 'Deleted' == product_deleted
         self.driver.close()
+
 
 AmazonTest()
