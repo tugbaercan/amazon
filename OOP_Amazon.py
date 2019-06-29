@@ -6,7 +6,7 @@ import time
 from selenium.webdriver.support.wait import WebDriverWait
 
 
-class BaseFunction():
+class BaseFunction:
     driver = webdriver.Chrome()
     driver.maximize_window()
     TEXT = ""
